@@ -3,7 +3,15 @@ var express = require('express')
   , util = require('util')
   , CoinbaseStrategy = require('passport-coinbase').Strategy;
 
-var COINBASE_CLIENT_ID = "--insert-coinbase-client-id-here--"
+var logger = require('morgan')
+  , bodyParser = require('body-parser')
+  , cookieParser = require('cookie-parser')
+  , methodOverride = require('method-override')
+  , session = require('express-session'); 
+  
+
+
+var COINBASE_CLIENT_ID = "--insert-coinbase-client-id-here--";
 var COINBASE_CLIENT_SECRET = "--insert-coinbase-client-secret-here--";
 
 
@@ -30,8 +38,12 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new CoinbaseStrategy({
     clientID: COINBASE_CLIENT_ID,
     clientSecret: COINBASE_CLIENT_SECRET,
-    callbackURL: "http://127.0.0.1:3000/auth/coinbase/callback",
-    scope: ["user"]
+      //edit these to switch to production
+    authorizationURL: 'https://sandbox.coinbase.com/oauth/authorize',
+    tokenURL: 'https://api.sandbox.coinbase.com/oauth/token',
+    callbackURL: "https://new-node-jjmardlin.c9.io/auth/coinbase/callback",
+    userProfileURL : 'https://api.sandbox.coinbase.com/v2/user',
+    scope: ["wallet:user:read wallet:user:email"]
   },
   function(accessToken, refreshToken, profile, done) {
     // asynchronous verification, for effect...
@@ -49,24 +61,37 @@ passport.use(new CoinbaseStrategy({
 
 
 
-var app = express.createServer();
+var app = express();
+
+// require packages
+var logger = require('morgan'); 
+var bodyParser = require('body-parser');  
+var cookieParser = require('cookie-parser');
+var methodOverride = require('method-override'); 
+var session = require('express-session'); 
 
 // configure Express
-app.configure(function() {
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'ejs');
-  app.use(express.logger());
-  app.use(express.cookieParser());
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(express.session({ secret: 'keyboard cat' }));
-  // Initialize Passport!  Also use passport.session() middleware, to support
-  // persistent login sessions (recommended).
-  app.use(passport.initialize());
-  app.use(passport.session());
-  app.use(app.router);
-  app.use(express.static(__dirname + '/public'));
-});
+app.set('views', __dirname + '/views'); 
+app.set('view engine', 'ejs');
+app.use(logger('combined'));
+
+app.use(cookieParser());
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(methodOverride());
+app.use(session({ 
+    secret: 'keyboard cat',
+    saveUninitialized: true,
+    resave: true
+  })
+);
+// Initialize Passport!  Also use passport.session() middleware, to support
+// persistent login sessions (recommended).
+app.use(passport.initialize());
+app.use(passport.session());
+
+//app.use(express.static(__dirname + '/public'));
+
 
 
 app.get('/', function(req, res){
@@ -109,7 +134,7 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-app.listen(3000);
+app.listen(process.env.PORT, process.env.IP);
 
 
 // Simple route middleware to ensure user is authenticated.
