@@ -3,14 +3,6 @@ var express = require('express')
   , util = require('util')
   , CoinbaseStrategy = require('passport-coinbase').Strategy;
 
-var logger = require('morgan')
-  , bodyParser = require('body-parser')
-  , cookieParser = require('cookie-parser')
-  , methodOverride = require('method-override')
-  , session = require('express-session'); 
-  
-
-
 var COINBASE_CLIENT_ID = "--insert-coinbase-client-id-here--";
 var COINBASE_CLIENT_SECRET = "--insert-coinbase-client-secret-here--";
 
@@ -38,10 +30,10 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new CoinbaseStrategy({
     clientID: COINBASE_CLIENT_ID,
     clientSecret: COINBASE_CLIENT_SECRET,
-      //edit these to switch to production
+      //remove the these to switch to production
     authorizationURL: 'https://sandbox.coinbase.com/oauth/authorize',
     tokenURL: 'https://api.sandbox.coinbase.com/oauth/token',
-    callbackURL: "https://new-node-jjmardlin.c9.io/auth/coinbase/callback",
+    callbackURL: "--insert-callbackURL-here--",
     userProfileURL : 'https://api.sandbox.coinbase.com/v2/user',
     scope: ["wallet:user:read wallet:user:email"]
   },
