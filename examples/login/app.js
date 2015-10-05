@@ -1,7 +1,12 @@
 var express = require('express')
   , passport = require('passport')
   , util = require('util')
-  , CoinbaseStrategy = require('passport-coinbase').Strategy;
+  , CoinbaseStrategy = require('passport-coinbase').Strategy
+  , logger = require('morgan')
+  , bodyParser = require('body-parser')
+  , cookieParser = require('cookie-parser')
+  , methodOverride = require('method-override')
+  , session = require('express-session'); 
 
 var COINBASE_CLIENT_ID = "--insert-coinbase-client-id-here--";
 var COINBASE_CLIENT_SECRET = "--insert-coinbase-client-secret-here--";
@@ -30,11 +35,12 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new CoinbaseStrategy({
     clientID: COINBASE_CLIENT_ID,
     clientSecret: COINBASE_CLIENT_SECRET,
-      //remove the these to switch to production
+      //remove these Sandbox URLs to switch to production
     authorizationURL: 'https://sandbox.coinbase.com/oauth/authorize',
     tokenURL: 'https://api.sandbox.coinbase.com/oauth/token',
-    callbackURL: "--insert-callbackURL-here--",
     userProfileURL : 'https://api.sandbox.coinbase.com/v2/user',
+    
+    callbackURL: "--insert-callbackURL-here--",
     scope: ["wallet:user:read wallet:user:email"]
   },
   function(accessToken, refreshToken, profile, done) {
@@ -54,13 +60,6 @@ passport.use(new CoinbaseStrategy({
 
 
 var app = express();
-
-// require packages
-var logger = require('morgan'); 
-var bodyParser = require('body-parser');  
-var cookieParser = require('cookie-parser');
-var methodOverride = require('method-override'); 
-var session = require('express-session'); 
 
 // configure Express
 app.set('views', __dirname + '/views'); 
